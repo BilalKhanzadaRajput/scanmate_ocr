@@ -1,7 +1,9 @@
 import 'dart:developer';
+import 'dart:io'; // Import for file operations
 
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:path_provider/path_provider.dart';
 
 class RecognizePage extends StatefulWidget {
   final String? path;
@@ -14,6 +16,7 @@ class RecognizePage extends StatefulWidget {
 class _RecognizePageState extends State<RecognizePage> {
   bool _isBusy = true;
   String _recognizedText = '';
+  String _notes = ''; // Variable to store notes
 
   TextEditingController controller = TextEditingController();
 
@@ -27,9 +30,10 @@ class _RecognizePageState extends State<RecognizePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Recognized Text",style: TextStyle(
-          color: Colors.white
-        ),),
+        title: const Text(
+          "Recognized Text",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.blue,
         centerTitle: true,
       ),
@@ -53,6 +57,12 @@ class _RecognizePageState extends State<RecognizePage> {
             TextFormField(
               maxLines: 3,
               controller: controller,
+              onChanged: (value) {
+                // Update notes when text changes
+                setState(() {
+                  _notes = value;
+                });
+              },
               decoration: InputDecoration(
                 hintText: "Add notes here...",
                 border: OutlineInputBorder(),
@@ -62,7 +72,8 @@ class _RecognizePageState extends State<RecognizePage> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Implement save functionality
+                // Call method to save text and notes
+                saveTextAndNotes();
               },
               child: Text("Save"),
             ),
@@ -83,7 +94,8 @@ class _RecognizePageState extends State<RecognizePage> {
     log("Processing image: ${inputImage.filePath}");
 
     try {
-      final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+      final RecognizedText recognizedText =
+      await textRecognizer.processImage(inputImage);
       setState(() {
         _recognizedText = recognizedText.text;
       });
@@ -96,4 +108,26 @@ class _RecognizePageState extends State<RecognizePage> {
       });
     }
   }
+
+  void saveTextAndNotes() async {
+    try {
+      String combinedText = "$_recognizedText\n$_notes";
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/recognized_text.txt');
+      await file.writeAsString(combinedText);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Text and notes saved successfully'),
+        ),
+      );
+    } catch (e) {
+      log("Error saving text and notes: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save text and notes'),
+        ),
+      );
+    }
+  }
+
 }

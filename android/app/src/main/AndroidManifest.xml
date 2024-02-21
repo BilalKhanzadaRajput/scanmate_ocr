@@ -2,7 +2,7 @@
     package="com.example.yourpackage">
 
     <application
-        android:label="scanmate_ocr"
+        android:label="scanmate ocr"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 

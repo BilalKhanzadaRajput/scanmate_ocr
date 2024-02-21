@@ -1,7 +1,9 @@
 import 'dart:developer';
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:scanmate_ocr/Screens/recongnization_page.dart';
 import 'package:scanmate_ocr/Screens/text_to_speech.dart';
 import 'package:scanmate_ocr/Utils/image_cropper_page.dart';
@@ -15,80 +17,26 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  String savedTextAndNotes = '';
+
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Center(
-          child: Text(
-            "Scan Mate",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20, // Adjust the font size as needed
-              color: Colors.white, // Adjust the text color as needed
-            ),
-          ),
-        ),
-        backgroundColor: Colors.blue,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Container(
-                margin: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  image: const DecorationImage(
-                    image: AssetImage(
-                        'assets/IT.png'), // Replace with your image path
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                child: InkWell(
-                  onTap: _showCameraGalleryMenu,
-                ),
-                width: MediaQuery.of(context).size.width - 32,
-                height: MediaQuery.of(context).size.height * 0.3,
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Container(
-                margin: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: Colors.green,
-                  image: const DecorationImage(
-                    image: AssetImage(
-                        'assets/h.png'), // Replace with your image path
-                    fit: BoxFit.cover,
-                  ), // Change color to your preference
-                ),
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => TextToSpeech()),
-                    );
-                  },
-                ),
-                width: MediaQuery.of(context).size.width - 32,
-                height: MediaQuery.of(context).size.height * 0.3,
-              ),
-            ],
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showCameraGalleryMenu,
-        label: const Text("Scan Photo"),
-        icon: const Icon(Icons.add),
-      ),
-    );
+  void initState() {
+    super.initState();
+    loadSavedTextAndNotes();
+  }
+
+  void loadSavedTextAndNotes() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/recognized_text.txt');
+      if (await file.exists()) {
+        setState(() {
+          savedTextAndNotes = file.readAsStringSync();
+        });
+      }
+    } catch (e) {
+      log("Error loading saved text and notes: $e");
+    }
   }
 
   // Function to show camera/gallery menu
@@ -156,4 +104,109 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
   }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Center(
+          child: Text(
+            "Scan Mate",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        backgroundColor: Colors.blue,
+      ),
+      body: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Container(
+                  margin: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    image: const DecorationImage(
+                      image: AssetImage('assets/IT.png'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  child: InkWell(
+                    onTap: _showCameraGalleryMenu,
+                  ),
+                  width: MediaQuery.of(context).size.width - 32,
+                  height: MediaQuery.of(context).size.height * 0.3,
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Container(
+                  margin: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.green,
+                    image: const DecorationImage(
+                      image: AssetImage('assets/h.png'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => TextToSpeech()),
+                      );
+                    },
+                  ),
+                  width: MediaQuery.of(context).size.width - 32,
+                  height: MediaQuery.of(context).size.height * 0.3,
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                savedTextAndNotes.isNotEmpty
+                    ? Container(
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.grey[300],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Saved Text and Notes:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(savedTextAndNotes),
+                    ],
+                  ),
+                )
+                    : SizedBox(),
+              ],
+            ),
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _showCameraGalleryMenu,
+        label: const Text("Scan Photo"),
+        icon: const Icon(Icons.add),
+      ),
+    );
+  }
 }
+
+
