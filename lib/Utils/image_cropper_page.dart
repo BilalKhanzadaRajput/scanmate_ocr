@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:scanmate_ocr/Screens/recongnization_page.dart';
 
-void imageCropperView(String? path, BuildContext context) async {
+Future<String?> imageCropperView(String? path, BuildContext context) async {
   CroppedFile? croppedFile = await ImageCropper().cropImage(
     sourcePath: path!,
     aspectRatioPresets: [
@@ -32,10 +32,9 @@ void imageCropperView(String? path, BuildContext context) async {
 
   if (croppedFile != null) {
     log("Image cropped");
-    Navigator.push(context, CupertinoPageRoute(builder: (_) => RecognizePage(
-      path: croppedFile.path,
-    )));
+   return croppedFile.path;
+
   } else {
     log("Do nothing");
-  }
+  }return '';
 }
