@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:scanmate_ocr/Utils/Widgets/modal_dialog.dart';
+import 'package:scanmate_ocr/Utils/image_cropper_page.dart';
 import 'package:scanmate_ocr/Utils/image_picker_class.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -17,7 +18,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Center(child: Text("ScanMate",style: TextStyle(fontWeight: FontWeight.bold,),)),
+        title: const Center(
+            child: Text(
+          "ScanMate",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        )),
         backgroundColor: Colors.blue,
       ),
       body: const Card(),
@@ -28,20 +35,17 @@ class _HomeScreenState extends State<HomeScreen> {
             onCameraTap: () {
               log("Camera");
               pickImage(source: ImageSource.camera).then((value) {
-                if(value != ''){
-
+                if (value != '') {
+                  imageCropperView(value, context);
                 }
-
               });
             },
             onGalleryTap: () {
               log("Gallery");
               pickImage(source: ImageSource.gallery).then((value) {
-                if(value != ''){
-
+                if (value != '') {
+                  imageCropperView(value, context);
                 }
-
-
               });
             },
           );
